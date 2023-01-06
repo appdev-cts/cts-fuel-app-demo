@@ -8,42 +8,69 @@ import {
   Dimensions,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import {Icon} from '../../Config/AppIcon';
 import {family} from '../../Config/AppFont';
-
-const Details = ({navigation}) => {
-  const [timerOn, settimerOn] = useState(true);
-  const [resend, setResend] = useState(false);
+import AsyncStorage from '@react-native-async-storage/async-storage';
+let interval = null;
+var counter = 60;
+const Details = ({route, navigation}) => {
+  const [timerOn, settimerOn] = useState(0);
+  const [running, setRunning] = useState(true);
 
   React.useEffect(() => {
-    timer(10);
-    settimerOn(true);
+    async function getTime() {
+      const time = await AsyncStorage.getItem(route.params.id + '');
+
+      if (time != null) {
+        var current = new Date().valueOf() / 1000;
+        let _timerOn = parseInt(current) - parseInt(time);
+        if (_timerOn >= 60) {
+          setRunning(false);
+          if (interval != null) {
+            clearInterval(interval);
+            settimerOn(0);
+            counter = 0;
+          }
+        } else {
+          counter = 60 - _timerOn;
+          settimerOn(counter);
+          timer();
+        }
+        // timer(time);
+      } else {
+        setStartTime();
+        timer();
+      }
+    }
+    getTime();
+
+    return () => {
+      clearInterval(interval);
+    };
+    // settimerOn(true);
   }, []);
 
-  function timer(remaining) {
-    var m = Math.floor(remaining / 60);
-    var s = remaining % 60;
-    m = m < 10 ? '0' + m : m;
-    s = s < 10 ? s : s;
+  const setStartTime = () => {
+    AsyncStorage.setItem(
+      route.params.id + '',
+      (new Date().valueOf() / 1000).toString(),
+    );
+  };
 
-    console.log('text', m + ':' + s);
-    settimerOn(s);
-    remaining -= 1;
-    if (remaining >= 0 && timerOn) {
-      let interval = setTimeout(function () {
-        timer(remaining);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-    if (!timerOn) {
-      // Do validate stuff here
-      return;
-    }
-    setResend(true);
-    
-  }
+  const timer = () => {
+    interval = setInterval(() => {
+      // settimerOn(timerOn - 1);
+      counter = counter - 1 > 0 ? counter - 1 : 0;
+      settimerOn(counter);
+      if (counter <= 0) {
+        setRunning(false);
+        clearInterval(interval);
+      }
+    }, 1000);
+  };
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#FFFFFF'}}>
@@ -126,36 +153,51 @@ const Details = ({navigation}) => {
               }}>
               ACTIVE FROM
             </Text>
-            <View style={{flexDirection: 'row', marginTop: 7}}>
-              <Text
-                style={{
-                  fontSize: 36,
-                  fontWeight: '700',
-                  marginLeft: 25,
-                  fontFamily: family.black,
-                }}>
-                {timerOn}
-              </Text>
-              <Text
-                style={{
-                  lineHeight: 18,
-                  fontWeight: '600',
-                  fontSize: 11,
-                  fontFamily: family.black,
-                }}>
-                seconds
-              </Text>
+            <View style={{flexDirection: 'row', marginTop: 7, justifyContent: 'space-between'}}>
+              <View style={{flexDirection: 'row'}}>
+                <Text
+                  style={{
+                    fontSize: 36,
+                    fontWeight: '700',
+                    marginLeft: 25,
+                    fontFamily: family.black,
+                    // backgroundColor:"red",
+                    // width:60
+                  }}>
+                  {timerOn}
+                </Text>
+                <Text
+                  style={{
+                    lineHeight: 18,
+                    fontWeight: '600',
+                    fontSize: 11,
+                    fontFamily: family.black,
+                  }}>
+                  seconds
+                </Text>
+              </View>
+
               <TouchableOpacity
                 onPress={() => {
-                  timer(10);
-                  settimerOn(true);
+                  if (running) {
+                    clearInterval(interval);
+                    counter = 0;
+                    settimerOn(counter);
+                    setRunning(false);
+                  } else {
+                    setRunning(true);
+                    counter = 60;
+                    settimerOn(counter);
+                    setStartTime();
+                    timer();
+                  }
                 }}
                 style={{
                   width: 110,
                   height: 28,
                   backgroundColor: '#DD1D21',
                   borderRadius: 50,
-                  marginHorizontal: 105,
+                  marginRight: 10,
                   // alignSelf:'center'
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -167,14 +209,13 @@ const Details = ({navigation}) => {
                     fontWeight: '600',
                     fontFamily: family.black,
                   }}>
-                  {!resend ? 'Stop' : 'Start'}
+                  {running ? 'Stop' : 'Start'}
                 </Text>
               </TouchableOpacity>
             </View>
             <View
               style={{
                 flexDirection: 'row',
-                // backgroundColor: 'yellow',
                 marginLeft: 25,
               }}>
               <Text

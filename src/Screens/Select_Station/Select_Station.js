@@ -13,6 +13,7 @@ import {
 import React, {useEffect, useState} from 'react';
 import {Icon} from '../../Config/AppIcon';
 import {family} from '../../Config/AppFont';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const DATA = [];
 
 const Select_Station = ({navigation}) => {
@@ -69,7 +70,8 @@ const Select_Station = ({navigation}) => {
         borderBottomColor: '#F0F4F5',
       }}
       onPress={() => {
-        navigation.navigate('Details');
+       
+         navigation.navigate('Details', {id: item.id});
       }}>
       <Image
         source={Icon.Pump}
