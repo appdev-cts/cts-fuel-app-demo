@@ -14,7 +14,6 @@ const Select_Station = ({ navigation }) => {
   useEffect(() => {
     getDataUsingGet();
   }, []);
-
   const getDataUsingGet = () => {
     fetch("https://reqres.in/api/unknown", {
       method: "GET",

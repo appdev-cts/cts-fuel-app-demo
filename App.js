@@ -7,8 +7,9 @@ import Disclaimer from './src/Screens/Disclaimer/Disclaimer';
 import Select_Station from './src/Screens/Select_Station/Select_Station';
 import Details from './src/Screens/Details/Details';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {LogBox} from 'react-native';
 const Stack = createNativeStackNavigator();
-
+LogBox.ignoreAllLogs()
 const App = () => {
   const [route, setRoute] = React.useState(null);
   React.useEffect(() => {
