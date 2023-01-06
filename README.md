@@ -5,14 +5,14 @@ npm install -g npm
 
 ## Run on android
 ```
-cd FuelApp
+cd cts-fuel-app-demo
 npm install
 npm run android
 ```
 
 ## Run on ios
 ```
-cd FuelApp
+cd cts-fuel-app-demo
 npm install
 cd ios
 pod install
